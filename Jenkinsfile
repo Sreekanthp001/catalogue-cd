@@ -36,7 +36,7 @@ pipeline {
             }
         }
 
-        stage('check Status'){
+        stage('Check Status'){
             steps{
                 script{
                     withAWS(credentials: 'aws-creds', region: 'us-east-1') {
@@ -56,21 +56,22 @@ pipeline {
                                 error "Deployment is Failure, Rollback Failure. Application is not running"
                             }
                         }
+
                     }
                 }
             }
         }
     }
 
-    post {
-        always {
+    post { 
+        always { 
             echo 'I will always say Hello again!'
             deleteDir()
         }
-        success {
+        success { 
             echo 'Hello Success'
         }
-        failure {
+        failure { 
             echo 'Hello Failure'
         }
     }
