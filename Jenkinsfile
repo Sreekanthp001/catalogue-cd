@@ -35,7 +35,33 @@ pipeline {
                 }
             }
         }
+
+        stage('check Status'){
+            steps{
+                script{
+                    withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+                        def deploymentStatus = sh(returnStdout: true, script: "kubectl rollout status deployment/catalogue --timeout=30s -n $PROJECT || echo FAILED").trim()
+                        if (deploymentStatus.contains("successfully rolled out")) {
+                            echo "Deployment is success"
+                        } else {
+                            sh """
+                                helm rollback $COMPONENT -n $PROJECT
+                                sleep 20
+                            """
+                            def rollbackStatus = sh(returnStdout: true, script: "kubectl rollout status deployment/catalogue --timeout=30s -n $PROJECT || echo FAILED").trim()
+                            if (rollbackStatus.contains("successfully rolled out")) {
+                                error "Deployment is Failure, Rollback Success"
+                            }
+                            else{
+                                error "Deployment is Failure, Rollback Failure. Application is not running"
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
+
     post {
         always {
             echo 'I will always say Hello again!'
