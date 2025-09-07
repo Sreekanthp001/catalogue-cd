@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: catalogue
+  namespace: argocd # namespace where the argo cd application resource lives
+spec:
+  project: default # the argo cd project this application belongs to
+  source: 
+    repoURL: https://github.com/Sreekanthp001/eks-argocd.git # url of the git repository
+    targetRevision: main # the specific branch, tag, or commit to sync from
+    path: .
+    helm:
+      releaseName: catalogue
+      valueFiles:
+      - values-dev.yaml
+  destination:
+    server: https://kubernetes.default.svc # The API server URL of the target Kubernetes cluster
+    namespace: argocd # The namespace in the target cluster where the application will be deployed
+  syncPolicy:
+    automated: # Enable automated synchronization
+      prune: true # Delete resources that are no longer in Git
+      selfHeal: true # Revert changes made manually in the cluster to match Git
+    syncOptions:
+      - CreateNamespace=true # Automatically create the target namespace if it doesn't exist
